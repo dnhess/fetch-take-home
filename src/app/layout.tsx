@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Navigation from "@/components/Navigation";
+import { FavoritesProvider } from "@/contexts/FavoritesContext";
+import { NuqsAdapter } from "nuqs/adapters/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,8 +32,12 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
-          <Navigation />
-          <main className="container mx-auto px-4 py-8">{children}</main>
+          <NuqsAdapter>
+            <Navigation />
+            <FavoritesProvider>
+              <main className="container mx-auto px-4 py-8">{children}</main>
+            </FavoritesProvider>
+          </NuqsAdapter>
         </AuthProvider>
       </body>
     </html>

@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getBreeds, searchLocations } from "@/lib/api";
+import { MultiSelect } from "@/components/ui/multi-select";
 import { DogLocation } from "@/lib/types";
 
 export default function SearchFilters({
@@ -19,8 +20,8 @@ export default function SearchFilters({
   zipCodes,
   setZipCodes,
 }: {
-  breeds: string;
-  setBreeds: (breeds: string) => void;
+  breeds: string[];
+  setBreeds: (breeds: string[]) => void;
   sort: string;
   setSort: (sort: string) => void;
   zipCodes: string[];
@@ -58,20 +59,20 @@ export default function SearchFilters({
     searchLocationsByCity();
   }, [citySearch]);
 
+  const breedOptions = allBreeds.map((breed) => ({
+    value: breed,
+    label: breed,
+  }));
+
   return (
     <div className="flex flex-wrap gap-4 mb-8">
-      <Select value={breeds} onValueChange={setBreeds}>
-        <SelectTrigger className="w-[200px]">
-          <SelectValue placeholder="Select breed" />
-        </SelectTrigger>
-        <SelectContent>
-          {allBreeds.map((breed) => (
-            <SelectItem key={breed} value={breed}>
-              {breed}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <MultiSelect
+        options={breedOptions}
+        defaultValue={breeds}
+        onValueChange={setBreeds}
+        className="w-[200px]"
+        placeholder="Select breeds..."
+      />
 
       <Select value={sort} onValueChange={setSort}>
         <SelectTrigger className="w-[200px]">

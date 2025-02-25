@@ -14,15 +14,21 @@ function DogsPageContent() {
   const [dogs, setDogs] = useState<Dog[]>([]);
   const [searchResult, setSearchResult] = useState<SearchResult | null>(null);
   const [page, setPage] = useQueryState("page", { defaultValue: "1" });
-  const [breeds, setBreeds] = useQueryState("breeds");
+  const [breeds, setBreeds] = useQueryState("breeds", {
+    parse: (value) => (value ? value.split(",") : []),
+    serialize: (value: string[]) => value.join(","),
+  });
   const [sort, setSort] = useQueryState("sort", { defaultValue: "breed:asc" });
-  const [zipCodes, setZipCodes] = useQueryState("zipCodes");
+  const [zipCodes, setZipCodes] = useQueryState("zipCodes", {
+    parse: (value) => (value ? value.split(",") : []),
+    serialize: (value: string[]) => value.join(","),
+  });
 
   useEffect(() => {
     const fetchDogs = async () => {
       const searchResults = await searchDogs({
-        breeds: breeds ? breeds.split(",") : [],
-        ...(zipCodes ? { zipCodes: zipCodes.split(",") } : {}),
+        breeds: breeds || [],
+        ...(zipCodes ? { zipCodes: zipCodes } : {}),
         size: DOGS_PER_PAGE,
         sort: sort || "breed:asc",
         from: (parseInt(page || "1") - 1) * DOGS_PER_PAGE,
@@ -49,12 +55,12 @@ function DogsPageContent() {
     <>
       <h1 className="text-3xl font-bold mb-8">Find Your Perfect Dog</h1>
       <SearchFilters
-        breeds={breeds || ""}
-        setBreeds={setBreeds}
+        breeds={breeds || []}
+        setBreeds={(newBreeds) => setBreeds(newBreeds)}
         sort={sort || "breed:asc"}
         setSort={setSort}
-        zipCodes={zipCodes ? zipCodes.split(",") : []}
-        setZipCodes={(newZipCodes) => setZipCodes(newZipCodes.join(","))}
+        zipCodes={zipCodes || []}
+        setZipCodes={(newZipCodes) => setZipCodes(newZipCodes)}
       />
       {searchResult?.total === 0 && breeds && (
         <p className="text-center text-lg text-muted-foreground">

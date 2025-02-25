@@ -1,36 +1,76 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+This is a [Next.js](https://nextjs.org) application built for the Fetch Take-Home assignment. It allows users to browse and discover dogs available for adoption, filter by various criteria, and find their perfect match!
 
-## Getting Started
+## Features
+- Browse dogs by breed, location, and other characteristics.
+- View detailed information about each dog.
+- Filter and sort search results.
+- Responsive design for optimal viewing on any device.
 
-First, run the development server:
+## 🚀 Getting Started
 
+### Prerequisites
+
+- Node.js 18.x or later
+- npm, yarn, or pnpm
+
+### Installation
+
+1. Clone the repository:
 ```bash
+git clone https://github.com/yourusername/fetch-dog-adoption.git
+cd fetch-dog-adoption
+```
+2. Install dependencies:
+```bash
+npm install
+or
+yarn install
+or 
+pnpm install
+```
+3. Start the development server
+```bash
+bash
 npm run dev
-# or
+or
 yarn dev
-# or
+or
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+5. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## Learn More
+## 🛠️ Built With
 
-To learn more about Next.js, take a look at the following resources:
+- [Next.js 15](https://nextjs.org/) - React framework
+- [Tailwind CSS](https://tailwindcss.com/) - Styling
+- [shadcn/ui](https://ui.shadcn.com/) - UI Components
+- [Lucide Icons](https://lucide.dev/) - Icons
+- [TypeScript](https://www.typescriptlang.org/) - Type safety
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Authentication
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The application uses a secure authentication system. Users can:
+- Log in with name and email
+- Maintain persistent sessions
+- Securely log out
 
-## Deploy on Vercel
+## API Integration
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+This application integrates with the Fetch API to:
+- Fetch available dogs
+- Search and filter dogs
+- Generate matches
+- Manage favorites
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Development
+
+### Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
+

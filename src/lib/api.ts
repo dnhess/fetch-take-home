@@ -2,7 +2,7 @@ import { API_BASE_URL } from '@/constants';
 import { Dog, SearchParams, SearchResult } from './types';
 
 export async function searchDogs(params: SearchParams): Promise<SearchResult> {
-  const queryString = new URLSearchParams(params as any).toString();
+  const queryString = new URLSearchParams(params as Record<string, string>).toString();
   const res = await fetch(`${API_BASE_URL}/dogs/search?${queryString}`, {
     credentials: 'include',
   });

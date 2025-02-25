@@ -9,6 +9,7 @@ import {
   Pagination,
   PaginationContent,
   PaginationItem,
+  PaginationLink,
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
@@ -29,7 +30,8 @@ export default function DogsPage() {
       await checkAuth();
       const searchResults = await searchDogs({
         breeds: breeds ? breeds.split(",") : [],
-        page: parseInt(page || "1"),
+        from: parseInt(page || "1"),
+        size: DOGS_PER_PAGE,
         sort: sort || "breed:asc",
       });
       setTotalDogs(searchResults.total);
@@ -52,30 +54,45 @@ export default function DogsPage() {
         setSort={setSort}
       />
       <DogList dogs={dogs} />
-      <Pagination>
-        <PaginationContent>
-          <PaginationItem>
-            <PaginationPrevious
-              onClick={() =>
-                setPage((prev) =>
-                  Math.max(parseInt(prev || "1") - 1, 1).toString()
-                )
-              }
-              isActive={page === "1"}
-            />
-          </PaginationItem>
-          <PaginationItem>
-            <PaginationNext
-              onClick={() =>
-                setPage((prev) =>
-                  Math.min(parseInt(prev || "1") + 1, totalPages).toString()
-                )
-              }
-              isActive={parseInt(page || "1") >= totalPages}
-            />
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
+      {totalPages > 1 && (
+        <Pagination className="mt-8">
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={() =>
+                  setPage((prev) =>
+                    Math.max(parseInt(prev || "1") - 1, 1).toString()
+                  )
+                }
+                isActive={page === "1"}
+              />
+            </PaginationItem>
+            {Array.from({ length: totalPages }, (_, i) => (
+              <PaginationItem key={i + 1}>
+                <PaginationLink
+                  href={`/dogs?${new URLSearchParams({
+                    page: (i + 1).toString(),
+                    breeds: breeds || "",
+                    sort: sort || "breed:asc",
+                  }).toString()}`}
+                >
+                  {i + 1}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+            <PaginationItem>
+              <PaginationNext
+                onClick={() =>
+                  setPage((prev) =>
+                    Math.min(parseInt(prev || "1") + 1, totalPages).toString()
+                  )
+                }
+                isActive={parseInt(page || "1") >= totalPages}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      )}
     </>
   );
 }

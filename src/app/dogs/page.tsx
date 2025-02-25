@@ -8,18 +8,19 @@ import SearchFilters from "@/components/SearchFilters";
 import {
   Pagination,
   PaginationContent,
+  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { useAuth } from "@/contexts/AuthContext";
-import { Dog } from "@/lib/types";
+import { Dog, SearchResult } from "@/lib/types";
 import { DOGS_PER_PAGE } from "@/constants";
 
 export default function DogsPage() {
   const [dogs, setDogs] = useState<Dog[]>([]);
-  const [totalDogs, setTotalDogs] = useState(0);
+  const [searchResult, setSearchResult] = useState<SearchResult | null>(null);
   const [page, setPage] = useQueryState("page", { defaultValue: "1" });
   const [breeds, setBreeds] = useQueryState("breeds");
   const [sort, setSort] = useQueryState("sort", { defaultValue: "breed:asc" });
@@ -30,11 +31,11 @@ export default function DogsPage() {
       await checkAuth();
       const searchResults = await searchDogs({
         breeds: breeds ? breeds.split(",") : [],
-        from: parseInt(page || "1"),
         size: DOGS_PER_PAGE,
         sort: sort || "breed:asc",
+        from: (parseInt(page || "1") - 1) * DOGS_PER_PAGE,
       });
-      setTotalDogs(searchResults.total);
+      setSearchResult(searchResults);
       const dogDetails = await getDogDetails(searchResults.resultIds);
       setDogs(dogDetails);
     };
@@ -42,7 +43,15 @@ export default function DogsPage() {
     fetchDogs();
   }, [breeds, page, sort, checkAuth]);
 
-  const totalPages = Math.ceil(totalDogs / DOGS_PER_PAGE);
+  const totalPages = searchResult
+    ? Math.ceil(searchResult.total / DOGS_PER_PAGE)
+    : 0;
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage.toString());
+  };
+
+  const currentPage = parseInt(page || "1");
 
   return (
     <>
@@ -55,43 +64,102 @@ export default function DogsPage() {
       />
       <DogList dogs={dogs} />
       {totalPages > 1 && (
-        <Pagination className="mt-8">
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                onClick={() =>
-                  setPage((prev) =>
-                    Math.max(parseInt(prev || "1") - 1, 1).toString()
-                  )
-                }
-                isActive={page === "1"}
-              />
-            </PaginationItem>
-            {Array.from({ length: totalPages }, (_, i) => (
-              <PaginationItem key={i + 1}>
+        <>
+          <Pagination className="mt-8">
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handlePageChange(Math.max(currentPage - 1, 1));
+                  }}
+                />
+              </PaginationItem>
+              <PaginationItem className="hidden md:inline-flex">
                 <PaginationLink
-                  href={`/dogs?${new URLSearchParams({
-                    page: (i + 1).toString(),
-                    breeds: breeds || "",
-                    sort: sort || "breed:asc",
-                  }).toString()}`}
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handlePageChange(1);
+                  }}
+                  isActive={currentPage === 1}
                 >
-                  {i + 1}
+                  1
                 </PaginationLink>
               </PaginationItem>
-            ))}
-            <PaginationItem>
-              <PaginationNext
-                onClick={() =>
-                  setPage((prev) =>
-                    Math.min(parseInt(prev || "1") + 1, totalPages).toString()
-                  )
-                }
-                isActive={parseInt(page || "1") >= totalPages}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
+              {currentPage > 3 && (
+                <PaginationItem className="hidden md:inline-flex">
+                  <PaginationEllipsis />
+                </PaginationItem>
+              )}
+              {currentPage > 2 && (
+                <PaginationItem className="hidden md:inline-flex">
+                  <PaginationLink
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handlePageChange(currentPage - 1);
+                    }}
+                  >
+                    {currentPage - 1}
+                  </PaginationLink>
+                </PaginationItem>
+              )}
+              {currentPage !== 1 && currentPage !== totalPages && (
+                <PaginationItem>
+                  <PaginationLink href="#" isActive>
+                    {currentPage}
+                  </PaginationLink>
+                </PaginationItem>
+              )}
+              {currentPage < totalPages - 1 && (
+                <PaginationItem className="hidden md:inline-flex">
+                  <PaginationLink
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handlePageChange(currentPage + 1);
+                    }}
+                  >
+                    {currentPage + 1}
+                  </PaginationLink>
+                </PaginationItem>
+              )}
+              {currentPage < totalPages - 2 && (
+                <PaginationItem className="hidden md:inline-flex">
+                  <PaginationEllipsis />
+                </PaginationItem>
+              )}
+              {currentPage !== totalPages && (
+                <PaginationItem className="hidden md:inline-flex">
+                  <PaginationLink
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handlePageChange(totalPages);
+                    }}
+                    isActive={currentPage === totalPages}
+                  >
+                    {totalPages}
+                  </PaginationLink>
+                </PaginationItem>
+              )}
+              <PaginationItem>
+                <PaginationNext
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handlePageChange(Math.min(currentPage + 1, totalPages));
+                  }}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+          <div className="mt-4 text-center text-sm text-muted-foreground">
+            Page {currentPage} of {totalPages}
+          </div>
+        </>
       )}
     </>
   );

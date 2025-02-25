@@ -6,7 +6,7 @@ This is a [Next.js](https://nextjs.org) application built for the Fetch Take-Hom
 - Filter and sort search results.
 - Responsive design for optimal viewing on any device.
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { API_BASE_URL } from "@/constants";
 
 interface AuthContextType {
@@ -18,6 +18,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true); // Add loading state
   const router = useRouter();
+  const pathname = usePathname();
 
   const checkAuth = async () => {
     setIsLoading(true);
@@ -26,13 +27,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         credentials: "include",
       });
       setIsAuthenticated(response.ok);
-      if (!response.ok) {
+      if (!response.ok && pathname !== "/") {
         router.push("/login");
       }
     } catch (error) {
       console.error("Error checking authentication:", error);
       setIsAuthenticated(false);
-      router.push("/login");
+      if (pathname !== "/") {
+        router.push("/login");
+      }
     } finally {
       setIsLoading(false);
     }

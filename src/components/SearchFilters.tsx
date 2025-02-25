@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -7,61 +8,129 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getBreeds } from "@/lib/api";
-
-interface SearchFiltersProps {
-  breeds: string;
-  setBreeds: (
-    value: string | ((prev: string | null) => string | null) | null
-  ) => void;
-  sort: string;
-  setSort: (
-    value: string | ((prev: string | null) => string | null) | null
-  ) => void;
-}
+import { getBreeds, searchLocations } from "@/lib/api";
+import { DogLocation } from "@/lib/types";
 
 export default function SearchFilters({
   breeds,
   setBreeds,
   sort,
   setSort,
-}: SearchFiltersProps) {
-  const [availableBreeds, setAvailableBreeds] = useState<string[]>([]);
+  zipCodes,
+  setZipCodes,
+}: {
+  breeds: string;
+  setBreeds: (breeds: string) => void;
+  sort: string;
+  setSort: (sort: string) => void;
+  zipCodes: string[];
+  setZipCodes: (zipCodes: string[]) => void;
+}) {
+  const [allBreeds, setAllBreeds] = useState<string[]>([]);
+  const [citySearch, setCitySearch] = useState("");
+  const [locations, setLocations] = useState<DogLocation[]>([]);
 
   useEffect(() => {
     const fetchBreeds = async () => {
-      const breedList = await getBreeds();
-      setAvailableBreeds(breedList);
+      const breeds = await getBreeds();
+      setAllBreeds(breeds);
     };
     fetchBreeds();
   }, []);
 
+  useEffect(() => {
+    const searchLocationsByCity = async () => {
+      if (citySearch.length >= 3) {
+        try {
+          const { results } = await searchLocations({
+            city: citySearch,
+            size: 10,
+          });
+          setLocations(results);
+        } catch (error) {
+          console.error("Error searching locations:", error);
+          setLocations([]);
+        }
+      } else {
+        setLocations([]);
+      }
+    };
+    searchLocationsByCity();
+  }, [citySearch]);
+
   return (
     <div className="flex flex-wrap gap-4 mb-8">
-      <Select value={breeds} onValueChange={(value) => setBreeds(value)}>
+      <Select value={breeds} onValueChange={setBreeds}>
         <SelectTrigger className="w-[200px]">
           <SelectValue placeholder="Select breed" />
         </SelectTrigger>
         <SelectContent>
-          {availableBreeds.map((breed) => (
+          {allBreeds.map((breed) => (
             <SelectItem key={breed} value={breed}>
               {breed}
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
-      <Select value={sort} onValueChange={(value) => setSort(value)}>
+
+      <Select value={sort} onValueChange={setSort}>
         <SelectTrigger className="w-[200px]">
           <SelectValue placeholder="Sort by" />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="breed:asc">Breed (A-Z)</SelectItem>
           <SelectItem value="breed:desc">Breed (Z-A)</SelectItem>
-          <SelectItem value="age:asc">Age (Youngest)</SelectItem>
-          <SelectItem value="age:desc">Age (Oldest)</SelectItem>
+          <SelectItem value="age:asc">Age (Youngest First)</SelectItem>
+          <SelectItem value="age:desc">Age (Oldest First)</SelectItem>
+          <SelectItem value="name:asc">Name (A-Z)</SelectItem>
+          <SelectItem value="name:desc">Name (Z-A)</SelectItem>
         </SelectContent>
       </Select>
-      <Button onClick={() => setBreeds("")}>Clear Filters</Button>
+
+      <div className="w-[200px]">
+        <Input
+          type="text"
+          placeholder="Search by city"
+          value={citySearch}
+          onChange={(e) => setCitySearch(e.target.value)}
+        />
+        {locations.length > 0 && (
+          <ul className="mt-2 border rounded-md max-h-40 overflow-y-auto">
+            {locations.map((location) => (
+              <li
+                key={location.zip_code}
+                className="p-2 hover:bg-gray-100 cursor-pointer"
+                onClick={() => {
+                  setZipCodes([...zipCodes, location.zip_code]);
+                  setCitySearch("");
+                }}
+              >
+                {location.city}, {location.state} ({location.zip_code})
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {zipCodes.length > 0 && (
+        <div className="w-full">
+          <h3 className="font-semibold mb-2">Selected Locations:</h3>
+          <div className="flex flex-wrap gap-2">
+            {zipCodes.map((zipCode) => (
+              <Badge
+                key={zipCode}
+                variant="secondary"
+                className="cursor-pointer"
+                onClick={() =>
+                  setZipCodes(zipCodes.filter((zc) => zc !== zipCode))
+                }
+              >
+                {zipCode} &times;
+              </Badge>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

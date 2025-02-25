@@ -51,7 +51,7 @@ function FavoritesPageContent() {
           {matchedDog && (
             <div>
               <h2 className="text-2xl font-bold mb-4">Your Perfect Match</h2>
-              <DogCard dog={matchedDog} />
+              <DogCard dog={matchedDog} height={400} width={400} />
             </div>
           )}
         </>

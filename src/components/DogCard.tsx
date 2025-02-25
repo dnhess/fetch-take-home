@@ -8,8 +8,17 @@ import { Button } from "@/components/ui/button";
 import { useFavorites } from "@/contexts/FavoritesContext";
 import { Heart } from "lucide-react";
 import DogFullView from "./DogFullView";
+import cn from "classnames";
 
-export default function DogCard({ dog }: { dog: Dog }) {
+export default function DogCard({
+  dog,
+  height = 200,
+  width = 200,
+}: {
+  dog: Dog;
+  height?: number;
+  width?: number;
+}) {
   const [isFullViewOpen, setIsFullViewOpen] = useState(false);
   const { favorites, addFavorite, removeFavorite } = useFavorites();
   const isFavorite = favorites.includes(dog.id);
@@ -40,9 +49,11 @@ export default function DogCard({ dog }: { dog: Dog }) {
           <Image
             src={dog.img || "/placeholder.svg"}
             alt={dog.name}
-            width={200}
-            height={200}
-            className="w-full h-48 object-cover mb-4 rounded"
+            width={width}
+            height={height}
+            className={cn("w-full object-cover mb-4 rounded", {
+              "h-48": height === 200 && width === 200,
+            })}
           />
           <Badge>{dog.breed}</Badge>
           <p className="mt-2">Age: {dog.age} years</p>

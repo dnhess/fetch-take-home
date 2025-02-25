@@ -6,7 +6,6 @@ import { searchDogs, getDogDetails } from "@/lib/api";
 import DogList from "@/components/DogList";
 import SearchFilters from "@/components/SearchFilters";
 import { DogPagination } from "@/components/DogPagination";
-import { useAuth } from "@/contexts/AuthContext";
 import { Dog, SearchResult } from "@/lib/types";
 import { DOGS_PER_PAGE } from "@/constants";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -17,12 +16,13 @@ function DogsPageContent() {
   const [page, setPage] = useQueryState("page", { defaultValue: "1" });
   const [breeds, setBreeds] = useQueryState("breeds");
   const [sort, setSort] = useQueryState("sort", { defaultValue: "breed:asc" });
-  const { checkAuth } = useAuth();
+  const [zipCodes, setZipCodes] = useQueryState("zipCodes");
 
   useEffect(() => {
     const fetchDogs = async () => {
       const searchResults = await searchDogs({
         breeds: breeds ? breeds.split(",") : [],
+        ...(zipCodes ? { zipCodes: zipCodes.split(",") } : {}),
         size: DOGS_PER_PAGE,
         sort: sort || "breed:asc",
         from: (parseInt(page || "1") - 1) * DOGS_PER_PAGE,
@@ -33,7 +33,7 @@ function DogsPageContent() {
     };
 
     fetchDogs();
-  }, [breeds, page, sort, checkAuth]);
+  }, [breeds, page, sort, zipCodes]);
 
   const totalPages = searchResult
     ? Math.ceil(searchResult.total / DOGS_PER_PAGE)
@@ -53,7 +53,14 @@ function DogsPageContent() {
         setBreeds={setBreeds}
         sort={sort || "breed:asc"}
         setSort={setSort}
+        zipCodes={zipCodes ? zipCodes.split(",") : []}
+        setZipCodes={(newZipCodes) => setZipCodes(newZipCodes.join(","))}
       />
+      {searchResult?.total === 0 && breeds && (
+        <p className="text-center text-lg text-muted-foreground">
+          No dogs found. Try adjusting your search filters.
+        </p>
+      )}
       <DogList dogs={dogs} />
       {totalPages > 1 && (
         <>

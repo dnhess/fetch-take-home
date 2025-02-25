@@ -7,7 +7,7 @@ export interface Dog {
   breed: string;
 }
 
-export interface Location {
+export interface DogLocation {
   zip_code: string;
   latitude: number;
   longitude: number;
@@ -29,8 +29,9 @@ export interface SearchParams {
   size?: number;
   from?: number;
   sort?: string;
+  city?: string;
+  states?: string[];
 }
-
 export interface SearchResult {
   resultIds: string[];
   total: number;

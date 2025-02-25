@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '@/constants';
-import { Dog, SearchParams, SearchResult } from './types';
+import { Dog, DogLocation, SearchParams, SearchResult } from './types';
 
 export async function searchDogs(params: SearchParams): Promise<SearchResult> {
   const queryString = new URLSearchParams(params as Record<string, string>).toString();
@@ -38,5 +38,32 @@ export async function getBreeds(): Promise<string[]> {
     credentials: 'include',
   });
   if (!res.ok) throw new Error("Failed to fetch breeds");
+  return res.json();
+}
+
+export async function searchLocations(params: {
+  city?: string;
+  states?: string[];
+  size?: number;
+  from?: number;
+}): Promise<{ results: DogLocation[]; total: number }> {
+  const res = await fetch(`${API_BASE_URL}/locations/search`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+    credentials: 'include',
+  });
+  if (!res.ok) throw new Error("Failed to search locations");
+  return res.json();
+}
+
+export async function getLocationDetails(zipCodes: string[]): Promise<DogLocation[]> {
+  const res = await fetch(`${API_BASE_URL}/locations`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(zipCodes),
+    credentials: 'include',
+  });
+  if (!res.ok) throw new Error("Failed to fetch location details");
   return res.json();
 }

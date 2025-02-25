@@ -6,6 +6,7 @@ import { API_BASE_URL } from "@/constants";
 
 interface AuthContextType {
   isAuthenticated: boolean;
+  isLoading: boolean; // Add loading state
   checkAuth: () => Promise<void>;
   login: (name: string, email: string) => Promise<boolean>;
   logout: () => Promise<void>;
@@ -15,22 +16,25 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Add loading state
   const router = useRouter();
 
   const checkAuth = async () => {
+    setIsLoading(true);
     try {
-      // We're using the /dogs/breeds endpoint to check if the user is authenticated
-      // because:
-      // 1. It's a lightweight endpoint that doesn't return much data
-      // 2. It requires authentication, so it will fail if the user isn't logged in
-      // 3. We don't have a dedicated auth check endpoint in the provided API
       const response = await fetch(`${API_BASE_URL}/dogs/breeds`, {
         credentials: "include",
       });
       setIsAuthenticated(response.ok);
+      if (!response.ok) {
+        router.push("/login");
+      }
     } catch (error) {
       console.error("Error checking authentication:", error);
       setIsAuthenticated(false);
+      router.push("/login");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -39,6 +43,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = async (name: string, email: string) => {
+    setIsLoading(true);
     try {
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: "POST",
@@ -51,15 +56,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setIsAuthenticated(true);
         router.push("/dogs");
         return true;
-      } else {
-        return false;
       }
-    } catch (error) {
       return false;
+    } catch (error) {
+      console.error("Error logging in:", error);
+      return false;
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const logout = async () => {
+    setIsLoading(true);
     try {
       await fetch(`${API_BASE_URL}/auth/logout`, {
         method: "POST",
@@ -67,12 +75,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
     } finally {
       setIsAuthenticated(false);
+      setIsLoading(false);
       router.push("/login");
     }
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, checkAuth, login, logout }}>
+    <AuthContext.Provider
+      value={{ isAuthenticated, isLoading, checkAuth, login, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );

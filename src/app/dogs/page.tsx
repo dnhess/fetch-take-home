@@ -5,20 +5,13 @@ import { useQueryState } from "nuqs";
 import { searchDogs, getDogDetails } from "@/lib/api";
 import DogList from "@/components/DogList";
 import SearchFilters from "@/components/SearchFilters";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import { DogPagination } from "@/components/DogPagination";
 import { useAuth } from "@/contexts/AuthContext";
 import { Dog, SearchResult } from "@/lib/types";
 import { DOGS_PER_PAGE } from "@/constants";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
-export default function DogsPage() {
+function DogsPageContent() {
   const [dogs, setDogs] = useState<Dog[]>([]);
   const [searchResult, setSearchResult] = useState<SearchResult | null>(null);
   const [page, setPage] = useQueryState("page", { defaultValue: "1" });
@@ -28,7 +21,6 @@ export default function DogsPage() {
 
   useEffect(() => {
     const fetchDogs = async () => {
-      await checkAuth();
       const searchResults = await searchDogs({
         breeds: breeds ? breeds.split(",") : [],
         size: DOGS_PER_PAGE,
@@ -65,102 +57,24 @@ export default function DogsPage() {
       <DogList dogs={dogs} />
       {totalPages > 1 && (
         <>
-          <Pagination className="mt-8">
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handlePageChange(Math.max(currentPage - 1, 1));
-                  }}
-                />
-              </PaginationItem>
-              <PaginationItem className="hidden md:inline-flex">
-                <PaginationLink
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handlePageChange(1);
-                  }}
-                  isActive={currentPage === 1}
-                >
-                  1
-                </PaginationLink>
-              </PaginationItem>
-              {currentPage > 3 && (
-                <PaginationItem className="hidden md:inline-flex">
-                  <PaginationEllipsis />
-                </PaginationItem>
-              )}
-              {currentPage > 2 && (
-                <PaginationItem className="hidden md:inline-flex">
-                  <PaginationLink
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handlePageChange(currentPage - 1);
-                    }}
-                  >
-                    {currentPage - 1}
-                  </PaginationLink>
-                </PaginationItem>
-              )}
-              {currentPage !== 1 && currentPage !== totalPages && (
-                <PaginationItem>
-                  <PaginationLink href="#" isActive>
-                    {currentPage}
-                  </PaginationLink>
-                </PaginationItem>
-              )}
-              {currentPage < totalPages - 1 && (
-                <PaginationItem className="hidden md:inline-flex">
-                  <PaginationLink
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handlePageChange(currentPage + 1);
-                    }}
-                  >
-                    {currentPage + 1}
-                  </PaginationLink>
-                </PaginationItem>
-              )}
-              {currentPage < totalPages - 2 && (
-                <PaginationItem className="hidden md:inline-flex">
-                  <PaginationEllipsis />
-                </PaginationItem>
-              )}
-              {currentPage !== totalPages && (
-                <PaginationItem className="hidden md:inline-flex">
-                  <PaginationLink
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handlePageChange(totalPages);
-                    }}
-                    isActive={currentPage === totalPages}
-                  >
-                    {totalPages}
-                  </PaginationLink>
-                </PaginationItem>
-              )}
-              <PaginationItem>
-                <PaginationNext
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handlePageChange(Math.min(currentPage + 1, totalPages));
-                  }}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
+          <DogPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
           <div className="mt-4 text-center text-sm text-muted-foreground">
             Page {currentPage} of {totalPages}
           </div>
         </>
       )}
     </>
+  );
+}
+
+export default function DogsPage() {
+  return (
+    <ProtectedRoute>
+      <DogsPageContent />
+    </ProtectedRoute>
   );
 }

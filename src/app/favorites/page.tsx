@@ -7,8 +7,9 @@ import { getDogDetails, getMatch } from "@/lib/api";
 import DogCard from "@/components/DogCard";
 import { Button } from "@/components/ui/button";
 import { Dog } from "@/lib/types";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
-export default function FavoritesPage() {
+function FavoritesPageContent() {
   const [favoriteDogs, setFavoriteDogs] = useState<Dog[]>([]);
   const [matchedDog, setMatchedDog] = useState<Dog | null>(null);
   const { checkAuth } = useAuth();
@@ -16,7 +17,6 @@ export default function FavoritesPage() {
 
   useEffect(() => {
     const fetchFavoriteDogs = async () => {
-      await checkAuth();
       if (favorites.length > 0) {
         const dogs = await getDogDetails(favorites);
         setFavoriteDogs(dogs);
@@ -57,5 +57,13 @@ export default function FavoritesPage() {
         </>
       )}
     </div>
+  );
+}
+
+export default function FavoritesPage() {
+  return (
+    <ProtectedRoute>
+      <FavoritesPageContent />
+    </ProtectedRoute>
   );
 }
